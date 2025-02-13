@@ -1,18 +1,19 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import {useState} from 'react'
+import { Link,useNavigate} from 'react-router-dom';
+import {useDispatch } from 'react-redux';
 import {
   signInStart,
   signInSuccess,
   signInFailure,
 } from '../redux/user/userSlice';
-// import OAuth from '../components/OAuth';
+import OAuth from '../components/OAuth';
 
-export default function SignIn() {
+export default function signIn() {
   const [formData, setFormData] = useState({});
-  const { loading, error } = useSelector((state) => state.user);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch=useDispatch();
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -23,7 +24,7 @@ export default function SignIn() {
     e.preventDefault();
     try {
       dispatch(signInStart());
-      const res = await fetch('/api/auth/signin', {
+      const res = await fetch('/api/auth/signin',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,13 +34,16 @@ export default function SignIn() {
       const data = await res.json();
       console.log(data);
       if (data.success === false) {
-        dispatch(signInFailure(data.message));
+        setLoading(false);
+        setError(data.message);
         return;
       }
-      dispatch(signInSuccess(data));
+      setLoading(false);
+      setError(null);
       navigate('/');
     } catch (error) {
-      dispatch(signInFailure(error.message));
+      setLoading(false);
+      setError(error.message);
     }
   };
   console.log(formData);
@@ -66,6 +70,7 @@ export default function SignIn() {
           className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
         >{loading ? 'Loading...' : 'Sign In'}
         </button>
+        <OAuth/>
         </form>
         <div className='flex gap-2 mt-5'>
         <p>Don't have an account?</p>
